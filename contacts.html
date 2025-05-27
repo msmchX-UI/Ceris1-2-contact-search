@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Contact Reference</title>
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    input { width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; }
+    .contact { padding: 10px; border-bottom: 1px solid #ccc; }
+    .contact:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+
+  <h2>Search Contacts</h2>
+  <input type="text" id="search" placeholder="Type a name, email, or number...">
+  <div id="results"></div>
+
+  <script>
+    const sheetURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec"; // e.g., https://script.google.com/macros/s/...
+
+    let contacts = [];
+
+    async function fetchContacts() {
+      const res = await fetch(sheetURL);
+      contacts = await res.json();
+      displayContacts(contacts);
+    }
+
+    function displayContacts(list) {
+      const container = document.getElementById("results");
+      container.innerHTML = "";
+      list.forEach(contact => {
+        const div = document.createElement("div");
+        div.className = "contact";
+        div.innerHTML = `
+          <strong>${contact.Name}</strong><br>
+          📞 ${contact["Phone Number"]}<br>
+          ✉️ ${contact.Email}
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    document.getElementById("search").addEventListener("input", e => {
+      const term = e.target.value.toLowerCase();
+      const filtered = contacts.filter(c =>
+        c.Name.toLowerCase().includes(term) ||
+        c["Phone Number"].toString().includes(term) ||
+        c.Email.toLowerCase().includes(term)
+      );
+      displayContacts(filtered);
+    });
+
+    fetchContacts();
+  </script>
+
+</body>
+</html>

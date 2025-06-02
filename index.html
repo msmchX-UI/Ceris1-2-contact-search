@@ -79,9 +79,6 @@
     { username: "Junartorres3@gmail.com", password: "Jonard0603" }
   ];
 
-  // CHANGE THIS to your Apps Script logging endpoint!
-  const accessLogURL = "https://script.google.com/macros/s/AKfycbwpfVNURWUhQFU3ZRZ5r7lHB143YMMUKgAXyzBOU8zZ9tJXQZ_MyD6IBwoDstSvccoLwQ/exec"; // <-- Replace with your deployed script URL
-
   function login() {
     const uname = document.getElementById("username").value.trim();
     const pass = document.getElementById("password").value;
@@ -90,26 +87,11 @@
       u.username === uname && u.password === pass
     );
     if (matched) {
-      logAccess(uname); // <-- Log the access!
       document.getElementById("login-form").style.display = "none";
       document.getElementById("main-content").style.display = "";
       fetchContacts(); // Now fetch contacts after successful login
     } else {
       errorDiv.textContent = "Invalid username or password.";
-    }
-  }
-
-  // Function to log access
-  async function logAccess(username) {
-    try {
-      await fetch(accessLogURL, {
-        method: "POST",
-        body: JSON.stringify({ username }),
-        headers: { "Content-Type": "application/json" }
-      });
-    } catch (e) {
-      // Logging failures can be ignored or handled here
-      console.error("Logging failed", e);
     }
   }
 

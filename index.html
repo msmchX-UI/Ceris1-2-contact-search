@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Ceris 1&2 Contact Reference</title>
-  <link rel="icon" type="image/png" href="images/chai_logo.png">
+  <link rel="icon" type="images/chai_logo.png" href="images/chai_logo.png">
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     input { width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; }
@@ -73,17 +73,15 @@
     { username: "James123", password: "mejasdegs1A*" },
     // Mark Siaga
     { username: "Marksiaga", password: "siagamark871030" },
-        // Sherwin Alemania
+    // Sherwin Alemania
     { username: "Jsmania40", password: "Pewpewpew" },
     // Security Guard - Junar Torres
     { username: "Junartorres3@gmail.com", password: "Jonard0603" }
   ];
-
   // Use your Apps Script URL here (same as for reading contacts)
   const accessLogURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
-//  const accessLogURL = "https://script.google.com/macros/s/AKfycbwpfVNURWUhQFU3ZRZ5r7lHB143YMMUKgAXyzBOU8zZ9tJXQZ_MyD6IBwoDstSvccoLwQ/exec";
   const sheetURL = accessLogURL;
-
+  
   function login() {
     const uname = document.getElementById("username").value.trim();
     const pass = document.getElementById("password").value;
@@ -92,7 +90,6 @@
       u.username === uname && u.password === pass
     );
     if (matched) {
-      logAccess(uname); // Log access event
       document.getElementById("login-form").style.display = "none";
       document.getElementById("main-content").style.display = "";
       fetchContacts(); // Now fetch contacts after successful login
@@ -101,25 +98,13 @@
     }
   }
 
-  // Function to log access
-  async function logAccess(username) {
-    try {
-      await fetch(accessLogURL, {
-        method: "POST",
-        body: JSON.stringify({ username }),
-        headers: { "Content-Type": "application/json" }
-      });
-    } catch (e) {
-      // Logging failures can be ignored or handled here
-      console.error("Logging failed", e);
-    }
-  }
-
   // Allow pressing Enter to submit login
   document.getElementById("password").addEventListener("keyup", function(e) {
     if (e.key === "Enter") login();
   });
 
+  // --- The rest of your contact search code ---
+  const sheetURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
   let contacts = [];
 
   async function fetchContacts() {
@@ -129,4 +114,70 @@
       const res = await fetch(sheetURL);
       contacts = await res.json();
       // Do not call displayContacts here
+    } catch (err) {
+      container.innerHTML = "<span style='color:red'>Failed to load contacts.<br>" + err + "</span>";
     }
+  }
+
+  function displayContacts(list) {
+    const container = document.getElementById("results");
+    container.innerHTML = "";
+    if (!list.length) {
+      container.innerHTML = "<em>No contacts found.</em>";
+      return;
+    }
+    list.forEach(contact => {
+      const div = document.createElement("div");
+      div.className = "contact";
+      div.innerHTML = `
+        <strong>${contact.Name}</strong><br>
+        🏠 ${contact.Address || ""}<br>
+        📞 ${contact["Phone Number"]}<br>
+        ✉️ ${contact.Email}<br>
+        🏷️ ${contact.Category || ""}<br>
+        🚗 ${contact["Vehicle / Plate Number"] || ""}
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  // Only attach search listener if main-content is visible (after login)
+  document.getElementById("search").addEventListener("input", e => {
+    const term = e.target.value.toLowerCase();
+    if (!term) {
+      document.getElementById("results").innerHTML = ""; // Clear results if search is empty
+      return;
+    }
+    const filtered = contacts.filter(c =>
+      (c.Name && String(c.Name).toLowerCase().includes(term)) ||
+      (c.Address && String(c.Address).toLowerCase().includes(term)) ||
+      (c["Phone Number"] && String(c["Phone Number"]).toLowerCase().includes(term)) ||
+      (c.Email && String(c.Email).toLowerCase().includes(term)) ||
+      (c.Category && String(c.Category).toLowerCase().includes(term)) ||
+      (c["Plate Number"] && String(c["Plate Number"]).toLowerCase().includes(term)) ||
+      (c["Vehicle / Plate Number"] && String(c["Vehicle / Plate Number"]).toLowerCase().includes(term))
+    );
+    displayContacts(filtered);
+  });
+
+</script>
+
+<style>
+.logo-circle {
+  display: block;
+  margin: 0 auto 20px auto;
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  object-position: center 90%; /* Adjust vertical position as needed */
+  border-radius: 50%;
+  border: 3px solid #ccc;
+  background: #fff;
+  padding: 0;
+  /* Magnify the image */
+  transform: scale(1.5); /* Increase the value to zoom in more */
+}
+</style>
+
+</body>
+</html>

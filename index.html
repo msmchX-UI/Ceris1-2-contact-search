@@ -1,3 +1,7 @@
+Original contact search
+
+
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -85,36 +89,12 @@
     { username: "Arthurrio", password: "arrdec171987" },
     // Manuel Aruyan
     { username: "mannythemessenger", password: "Dani0530" },
-    // Aldrin Cortez - Roving Guard
+       // Aldrin Cortez - Roving Guard
     { username: "Aldrincortez59", password: "aldrin-123" },
-    // Security Guard - Junar Torres
+      // Security Guard - Junar Torres
     { username: "Junartorres3@gmail.com", password: "Jonard0603" }
   ];
-
-  // Google Apps Script endpoint
-//  const sheetURL = "https://script.google.com/macros/s/AKfycbxlQQzVWHjfGALhME9TIlgnnKv40up3944jDomd4l_79rO-we--Is-lZBiSCPsYbbrTkA/exec";
-    const sheetURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
-
-  let contacts = [];
-  let loggedInUser = "";
-
-  // Logging function
-  function logAccess(action, detail = "") {
-    // Use the tracked username after successful login
-    if (!loggedInUser) return;
-    fetch(sheetURL, {
-      method: "POST",
-      body: JSON.stringify({
-        username: loggedInUser,
-        action: action,
-        detail: detail
-      }),
-      headers: {
-        "Content-Type": "application/json"
-      }
-    }).catch(() => {});
-  }
-
+  
   function login() {
     const uname = document.getElementById("username").value.trim();
     const pass = document.getElementById("password").value;
@@ -123,11 +103,9 @@
       u.username === uname && u.password === pass
     );
     if (matched) {
-      loggedInUser = uname; // Track logged in user
       document.getElementById("login-form").style.display = "none";
       document.getElementById("main-content").style.display = "";
-      fetchContacts();
-      logAccess("login"); // Log successful login
+      fetchContacts(); // Now fetch contacts after successful login
     } else {
       errorDiv.textContent = "Invalid username or password.";
     }
@@ -137,6 +115,10 @@
   document.getElementById("password").addEventListener("keyup", function(e) {
     if (e.key === "Enter") login();
   });
+
+  // --- The rest of your contact search code ---
+  const sheetURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
+  let contacts = [];
 
   async function fetchContacts() {
     const container = document.getElementById("results");
@@ -172,16 +154,9 @@
     });
   }
 
-  // Log search terms and filter contacts
-  let lastLoggedSearch = "";
+  // Only attach search listener if main-content is visible (after login)
   document.getElementById("search").addEventListener("input", e => {
     const term = e.target.value.toLowerCase();
-
-    // Log only if term is not empty and is different from last logged term
-    if (term && term !== lastLoggedSearch) {
-      logAccess("search", term);
-      lastLoggedSearch = term;
-    }
     if (!term) {
       document.getElementById("results").innerHTML = ""; // Clear results if search is empty
       return;

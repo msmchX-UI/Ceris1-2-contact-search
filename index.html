@@ -2,7 +2,7 @@
 <html>
 <head>
   <title>Ceris 1&2 Contact Reference</title>
-  <link rel="icon" type="images/chai_logo.png" href="images/chai_logo.png">
+  <link rel="icon" type="image/png" href="images/chai_logo.png">
   <style>
     body { font-family: Arial, sans-serif; padding: 20px; }
     input { width: 100%; padding: 10px; margin-bottom: 20px; font-size: 16px; }
@@ -46,6 +46,19 @@
       cursor: pointer;
     }
     #login-error { color: red; margin-bottom: 10px; text-align: center; }
+    #loading { text-align: center; color: #2d89ef; margin-bottom: 20px; }
+    #logout-btn {
+      display: block;
+      margin: 10px auto 20px auto;
+      padding: 8px 16px;
+      background: #e74c3c;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+    #logout-btn:hover { background: #c0392b; }
   </style>
 </head>
 <body>
@@ -54,57 +67,93 @@
     <img src="images/chai_logo.png" alt="Logo" class="logo-circle" style="width:60px;height:60px;margin-bottom:20px;">
     <h2 style="text-align:center;">Login Required</h2>
     <div id="login-error"></div>
-    <input type="text" placeholder="Username" id="username" autocomplete="off">
+    <input type="text" placeholder="Username" id="username" autocomplete="off" autofocus>
     <input type="password" placeholder="Password" id="password" autocomplete="off">
-    <button onclick="login()">Login</button>
+    <button id="login-btn" onclick="login()">Login</button>
   </div>
 
   <div id="main-content" style="display:none;">
     <img src="images/chai_logo.png" alt="Logo" class="logo-circle">
+    <button id="logout-btn" onclick="logout()" style="display:none;">Logout</button>
     <h2>Search Contacts</h2>
     <input type="text" id="search" placeholder="Type either name, address, or plate number...">
+    <div id="loading" style="display:none;">Loading...</div>
     <div id="results"></div>
   </div>
 
 <script>
+  // Replace with your actual logging script Web App URL
+  const logScriptURL = "https://script.google.com/macros/s/AKfycbxJqA-pm79QKPW_RlwTbic7xez-mXpOEXe_BpuL56LPLzK8HbBI2UuE46EJeJfBv2Zx/exec";
+  const sheetURL = "https://script.google.com/macros/s/AKfycbxJqA-pm79QKPW_RlwTbic7xez-mXpOEXe_BpuL56LPLzK8HbBI2UuE46EJeJfBv2Zx/exec";
+
   // Hardcoded credentials (add as many as needed)
   const AUTHORIZED_USERS = [
-    // James de Guia
     { username: "James123", password: "mejasdegs1A*" },
-    // Mark Siaga
     { username: "Marksiaga", password: "siagamark871030" },
-    // Irene Almarinez
     { username: "Isalmiranez", password: "$ecreTary061085" },
-    // Sherwin Alemania
     { username: "Jsmania40", password: "Pewpewpew" },
-    // Marlon Melendez
     { username: "Marloncmdez", password: "mcmnov181979" },
-    // Chito Batalon
     { username: "Anicetomlon", password: "ambapr171962" },
-    // Arthur Ramirez
     { username: "Arthurrio", password: "arrdec171987" },
-    // Manuel Aruyan
     { username: "mannythemessenger", password: "Dani0530" },
-       // Aldrin Cortez - Roving Guard
     { username: "Aldrincortez59", password: "aldrin-123" },
-      // Security Guard - Junar Torres
     { username: "Junartorres3@gmail.com", password: "Jonard0603" }
   ];
-  
-  function login() {
+
+  let contacts = [];
+
+  function showLoading(show) {
+    document.getElementById("loading").style.display = show ? "" : "none";
+  }
+
+  // Logging function
+  async function logAccess(username) {
+    showLoading(true);
+    const response = await fetch(logScriptURL, {
+      method: 'POST',
+      body: JSON.stringify({ username }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+    showLoading(false);
+    const result = await response.text();
+    if (result !== "Success") {
+      throw new Error(result || "Unknown logging error");
+    }
+  }
+
+  // Main login logic
+  async function login() {
     const uname = document.getElementById("username").value.trim();
     const pass = document.getElementById("password").value;
     const errorDiv = document.getElementById("login-error");
+    const loginBtn = document.getElementById("login-btn");
+    errorDiv.style.color = "red";
+    errorDiv.textContent = "";
+    loginBtn.disabled = true;
+    showLoading(false);
+
     const matched = AUTHORIZED_USERS.some(u =>
       u.username === uname && u.password === pass
     );
     if (matched) {
-      document.getElementById("login-form").style.display = "none";
-      document.getElementById("main-content").style.display = "";
-      fetchContacts(); // Now fetch contacts after successful login
+      errorDiv.style.color = "#2d89ef";
+      errorDiv.textContent = "Logging access. Please wait...";
+      try {
+        await logAccess(uname);
+        errorDiv.textContent = "";
+        document.getElementById("login-form").style.display = "none";
+        document.getElementById("main-content").style.display = "";
+        document.getElementById("logout-btn").style.display = "block";
+        document.getElementById("search").focus();
+        fetchContacts();
+      } catch (err) {
+        errorDiv.style.color = "red";
+        errorDiv.textContent = "Login succeeded, but logging failed: " + err.message;
+      }
     } else {
       errorDiv.textContent = "Invalid username or password.";
     }
+    loginBtn.disabled = false;
   }
 
   // Allow pressing Enter to submit login
@@ -112,22 +161,26 @@
     if (e.key === "Enter") login();
   });
 
-  // --- The rest of your contact search code ---
-  const sheetURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
-  let contacts = [];
+  document.getElementById("username").addEventListener("keyup", function(e) {
+    if (e.key === "Enter") document.getElementById("password").focus();
+  });
 
+  // Fetch contacts from Google Apps Script
   async function fetchContacts() {
+    showLoading(true);
     const container = document.getElementById("results");
-    container.innerHTML = ""; // No contacts shown by default
+    container.innerHTML = "";
     try {
       const res = await fetch(sheetURL);
       contacts = await res.json();
-      // Do not call displayContacts here
+      showLoading(false);
     } catch (err) {
+      showLoading(false);
       container.innerHTML = "<span style='color:red'>Failed to load contacts.<br>" + err + "</span>";
     }
   }
 
+  // Display contacts
   function displayContacts(list) {
     const container = document.getElementById("results");
     container.innerHTML = "";
@@ -141,8 +194,8 @@
       div.innerHTML = `
         <strong>${contact.Name}</strong><br>
         🏠 ${contact.Address || ""}<br>
-        📞 ${contact["Phone Number"]}<br>
-        ✉️ ${contact.Email}<br>
+        📞 ${contact["Phone Number"] || ""}<br>
+        ✉️ ${contact.Email || ""}<br>
         🏷️ ${contact.Category || ""}<br>
         🚗 ${contact["Vehicle / Plate Number"] || ""}
       `;
@@ -150,11 +203,11 @@
     });
   }
 
-  // Only attach search listener if main-content is visible (after login)
+  // Search logic
   document.getElementById("search").addEventListener("input", e => {
     const term = e.target.value.toLowerCase();
     if (!term) {
-      document.getElementById("results").innerHTML = ""; // Clear results if search is empty
+      document.getElementById("results").innerHTML = "";
       return;
     }
     const filtered = contacts.filter(c =>
@@ -169,6 +222,19 @@
     displayContacts(filtered);
   });
 
+  // Logout logic (optional, for good UX)
+  function logout() {
+    document.getElementById("main-content").style.display = "none";
+    document.getElementById("login-form").style.display = "";
+    document.getElementById("username").value = "";
+    document.getElementById("password").value = "";
+    document.getElementById("search").value = "";
+    document.getElementById("results").innerHTML = "";
+    document.getElementById("login-error").textContent = "";
+    document.getElementById("logout-btn").style.display = "none";
+    document.getElementById("username").focus();
+  }
+
 </script>
 
 <style>
@@ -178,13 +244,12 @@
   width: 80px;
   height: 80px;
   object-fit: cover;
-  object-position: center 90%; /* Adjust vertical position as needed */
+  object-position: center 90%;
   border-radius: 50%;
   border: 3px solid #ccc;
   background: #fff;
   padding: 0;
-  /* Magnify the image */
-  transform: scale(1.5); /* Increase the value to zoom in more */
+  transform: scale(1.5);
 }
 </style>
 

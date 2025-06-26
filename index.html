@@ -67,6 +67,10 @@
   </div>
 
 <script>
+  // 1. LOGGING ENDPOINT - Replace with your actual logging script URL
+  const logScriptURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
+
+  
   // Hardcoded credentials (add as many as needed)
   const AUTHORIZED_USERS = [
     // James de Guia
@@ -108,7 +112,8 @@ function logAccess(username) {
     console.error('Error logging access:', error);
   });
 }
-  
+
+// 3. Update login() to call logAccess(uname) after a successful login
   function login() {
     const uname = document.getElementById("username").value.trim();
     const pass = document.getElementById("password").value;
@@ -131,8 +136,8 @@ function logAccess(username) {
   });
 
   // --- The rest of your contact search code ---
-//  const sheetURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
-  const sheetURL = "https://script.google.com/macros/s/AKfycbxJqA-pm79QKPW_RlwTbic7xez-mXpOEXe_BpuL56LPLzK8HbBI2UuE46EJeJfBv2Zx/exec";
+  const sheetURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
+//  const sheetURL = "https://script.google.com/macros/s/AKfycbxJqA-pm79QKPW_RlwTbic7xez-mXpOEXe_BpuL56LPLzK8HbBI2UuE46EJeJfBv2Zx/exec";
   let contacts = [];
 
   async function fetchContacts() {

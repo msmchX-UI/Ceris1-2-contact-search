@@ -91,6 +91,25 @@
     { username: "Junartorres3@gmail.com", password: "Jonard0603" }
   ];
   
+function logAccess(username) {
+  fetch(logScriptURL, {
+    method: 'POST',
+    body: JSON.stringify({ username }),
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  })
+  .then(r => r.text())
+  .then(result => {
+    // Optionally handle the result
+    console.log('Access logged:', result);
+  })
+  .catch(error => {
+    // Optional: handle error
+    console.error('Error logging access:', error);
+  });
+}
+  
   function login() {
     const uname = document.getElementById("username").value.trim();
     const pass = document.getElementById("password").value;

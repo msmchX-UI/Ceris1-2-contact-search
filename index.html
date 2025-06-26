@@ -101,11 +101,10 @@ function logAccess(username) {
   })
   .then(r => r.text())
   .then(result => {
-    // Optionally handle the result
     console.log('Access logged:', result);
   })
   .catch(error => {
-    // Optional: handle error
+    alert('Error logging access: ' + error);
     console.error('Error logging access:', error);
   });
 }

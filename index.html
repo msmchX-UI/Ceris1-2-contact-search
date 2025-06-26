@@ -69,8 +69,7 @@
 <script>
   // 1. LOGGING ENDPOINT - Replace with your actual logging script URL
   const logScriptURL = "https://script.google.com/macros/s/AKfycbxJqA-pm79QKPW_RlwTbic7xez-mXpOEXe_BpuL56LPLzK8HbBI2UuE46EJeJfBv2Zx/exec";
-
-  
+   
   // Hardcoded credentials (add as many as needed)
   const AUTHORIZED_USERS = [
     // James de Guia
@@ -96,7 +95,7 @@
   ];
   
 function logAccess(username) {
-  fetch(logScriptURL, {
+  return fetch(logScriptURL, {
     method: 'POST',
     body: JSON.stringify({ username }),
     headers: {
@@ -105,31 +104,40 @@ function logAccess(username) {
   })
   .then(r => r.text())
   .then(result => {
-    console.log('Access logged:', result);
-  })
-  .catch(error => {
-    alert('Error logging access: ' + error);
-    console.error('Error logging access:', error);
+    if (result === "Success") {
+      return true;
+    } else {
+      throw new Error(result);
+    }
   });
 }
 
 // 3. Update login() to call logAccess(uname) after a successful login
-  function login() {
-    const uname = document.getElementById("username").value.trim();
-    const pass = document.getElementById("password").value;
-    const errorDiv = document.getElementById("login-error");
-    const matched = AUTHORIZED_USERS.some(u =>
-      u.username === uname && u.password === pass
-    );
-    if (matched) {
-      logAccess(uname); // <-- THIS LINE LOGS THE LOGIN!
+ async function login() {
+  const uname = document.getElementById("username").value.trim();
+  const pass = document.getElementById("password").value;
+  const errorDiv = document.getElementById("login-error");
+  const matched = AUTHORIZED_USERS.some(u =>
+    u.username === uname && u.password === pass
+  );
+  if (matched) {
+    errorDiv.style.color = "black";
+    errorDiv.textContent = "Logging in, please wait...";
+    try {
+      await logAccess(uname);
+      errorDiv.textContent = "";
       document.getElementById("login-form").style.display = "none";
       document.getElementById("main-content").style.display = "";
-      fetchContacts(); // Now fetch contacts after successful login
-    } else {
-      errorDiv.textContent = "Invalid username or password.";
+      fetchContacts();
+    } catch (err) {
+      errorDiv.style.color = "red";
+      errorDiv.textContent = "Login succeeded, but log failed: " + err.message;
     }
+  } else {
+    errorDiv.style.color = "red";
+    errorDiv.textContent = "Invalid username or password.";
   }
+}
 
   // Allow pressing Enter to submit login
   document.getElementById("password").addEventListener("keyup", function(e) {
@@ -137,7 +145,7 @@ function logAccess(username) {
   });
 
   // --- The rest of your contact search code ---
-//  const sheetURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
+ // const sheetURL = "https://script.google.com/macros/s/AKfycbxvrAZ3peKIrro_svUX7LI2ozIrzjN3K7F7722c17GFHF9XggdcevjJLFo8B-V6Un8p_w/exec";
   const sheetURL = "https://script.google.com/macros/s/AKfycbxJqA-pm79QKPW_RlwTbic7xez-mXpOEXe_BpuL56LPLzK8HbBI2UuE46EJeJfBv2Zx/exec";
   let contacts = [];
 

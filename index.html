@@ -122,6 +122,7 @@ function logAccess(username) {
       u.username === uname && u.password === pass
     );
     if (matched) {
+      logAccess(uname); // <-- THIS LINE LOGS THE LOGIN!
       document.getElementById("login-form").style.display = "none";
       document.getElementById("main-content").style.display = "";
       fetchContacts(); // Now fetch contacts after successful login
